@@ -8,7 +8,7 @@ sem <- apply(meas[, 2:7], 1,function(x)sd(x)/sqrt(length(x))) #calculates standa
 meas["SEM"] <-sem
 meas["Replicates"]<-ncol(meas[2:7])
 meas["Mod"]<- read.csv("exmod.csv", header = TRUE) # read csv as in excel
-
+meas
 library(ggplot2)  #Plot 1
  ggplot(meas, aes(Means ,Mod)) + 
   geom_point(bg='yellow', pch=21, cex=3, lwd=3)+
@@ -40,7 +40,7 @@ library(ggplot2)  #Plot 1
    ((O-M)-(Oj-M))^2
  }
  
- LOF<- mapply(LO,meas[2:7],meas[8],meas[11])
+ LOF<- mapply(LO,meas[2:7],meas[8],meas[11])#8 is meabs, 11 is mod
  
  Losum <- rowSums(LOF)
 Losumsum <- sum(Losum)   
@@ -147,3 +147,4 @@ RMSEobar
 #Number of values
 No <- length(meas$Replicates)
 No
+
