@@ -1,7 +1,21 @@
-source('import.R')
-source('sumstat.R')
-meas <- sumstat(meas)
+
+# data import. Rows as relicates, calc mean, SE about measured mean, input modelled value.
+
+# Leave import to user, instruct to store measuresed samples in 'meas', modelled in 'mod'. Samples in rows, replicates as colums. See example data.ID as well
+#measured<- read.csv("exinp.csv", header = TRUE) # read csv as in excel
+#mod<- read.csv("exmod.csv", header = TRUE) # read csv as in excel
+#meas<- measured[2:7]
+#ID <- measured[1]
+
 modeval <- function(meas,mod) {
+  meas["Mean"] <- rowMeans(meas)  
+  
+  meas["SEM"]<- apply(meas[!names(meas) %in% c("Mean","SEM","Replicates")],1,function(meas)sd(meas)/sqrt(length(meas)))
+  meas["Replicates"]<- ncol(meas[!names(meas) %in% c("Mean","SEM")])
+  
+  
+  
+  
   
   Meanmeas <- mean(meas$Mean)
   meanmod <- mean(mod$Mod)
@@ -92,15 +106,35 @@ modeval <- function(meas,mod) {
   
   meobnoutput <- list("Maximum Error. Best = ABS(M)"=ME,"RMSE*Obar/100"=RMSEobar,"Number of values"=No)
   
-  output <- list(routput,moutput,rmsoutput,eoutput,loutput,meobnoutput)
+  require(ggplot2)
+  
+  plot1 <- ggplot(meas, aes(meas$Mean ,mod$Mod)) + 
+    geom_point(bg='yellow', pch=21, cex=3, lwd=3)+
+    coord_flip()+ # is this neccsassary or could I swap them before?
+    geom_smooth(method = "lm", se=FALSE, formula=y~x-1)+
+    geom_errorbar(aes(ymin= mod$Mod-meas$SEM, ymax= mod$Mod+meas$SEM), width=.01)+
+    xlab("Measured values (t C ha-1)")+
+    ylab("Simulated values (t C ha-1)")+
+    ylim(0,1)+
+    xlim(0,1)
+  
+  plot2<- ggplot(meas, aes(ID$Name, meas$Mean))+     #Plot 2
+    geom_point(bg='yellow', pch=21, cex=3, lwd=3)+
+    ylim(0,1)+
+    geom_errorbar(aes(ymin= meas$Mean-meas$SEM, ymax= meas$Mean+meas$SEM), width=1)+
+    geom_line(aes(ID$Name, mod$Mod),size=1)+
+    xlab("Sample")+
+    ylab("Value")
+  
+  ploutput <- list(plot1,plot2)
+  
+  
+  
+  output <- list(routput,moutput,rmsoutput,eoutput,loutput,meobnoutput,ploutput)
   return(output)
   
   
-  
-  
-  }
+    }
 
 
-test <- modeval(meas,mod)
-test
 
